@@ -114,7 +114,8 @@ Tools are organized by functionality:
 1. **Build and run:**
    ```bash
    docker build -t webex-mcp-server .
-   docker run -i --rm --env-file .env webex-mcp-server
+   # STDIO transport (for Codex/Claude Desktop)
+   docker run -i --rm --env-file .env -e TRANSPORT=stdio webex-mcp-server
    ```
 
 2. **Using docker-compose:**
@@ -132,7 +133,13 @@ Tools are organized by functionality:
 | `WEBEX_API_BASE_URL` | No | Webex API base URL | `https://webexapis.com/v1` |
 | `WEBEX_USER_EMAIL` | No | Your Webex email (for reference) | - |
 | `PORT` | No | Port for HTTP mode | `3001` |
-| `MCP_MODE` | No | Transport mode (`stdio` or `http`) | `stdio` |
+| `TRANSPORT` | No | Transport mode (`stdio`, `http`, or `sse`) | `stdio` |
+
+Transport precedence in `mcpServer.js` is:
+1. CLI args (`--http`, `--sse`, `--stdio`, or bare values)
+2. `TRANSPORT`
+
+Legacy env vars `MCP_MODE` and `MODE` are deprecated and ignored.
 
 ### Getting a Webex API Token
 
@@ -162,6 +169,8 @@ Add to your Claude Desktop configuration:
         "WEBEX_USER_EMAIL",
         "-e",
         "WEBEX_API_BASE_URL",
+        "-e",
+        "TRANSPORT=stdio",
         "webex-mcp-server"
       ],
       "env": {
@@ -196,7 +205,7 @@ The server supports MCP 2025-06-18 protocol with StreamableHTTP transport, inclu
 
 For STDIO mode:
 ```bash
-docker run -i --rm --env-file .env webex-mcp-server
+docker run -i --rm --env-file .env -e TRANSPORT=stdio webex-mcp-server
 ```
 
 For HTTP mode:
@@ -268,14 +277,12 @@ docker run -p 3001:3001 --rm --env-file .env webex-mcp-server --http
 
 ## Transport Modes
 
-### STDIO Mode (Default)
-The default transport mode for MCP clients like Claude Desktop:
+### STDIO Mode
+For MCP clients like Claude Desktop/Codex, use STDIO transport:
 
 ```bash
 # Start in STDIO mode
 node mcpServer.js
-# or
-npm start
 ```
 
 ### HTTP Mode (StreamableHTTP)
@@ -296,7 +303,7 @@ node mcpServer.js --http
 - **Protocol**: MCP 2025-06-18 with StreamableHTTP transport
 
 **Environment Variables:**
-- `MCP_MODE=http` - Force HTTP mode
+- `TRANSPORT=http` - Force HTTP mode
 - `PORT=3001` - Custom port (default: 3001)
 
 ### Smithery Integration

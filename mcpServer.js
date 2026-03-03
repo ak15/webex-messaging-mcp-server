@@ -8,6 +8,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { discoverTools } from "./lib/tools.js";
+import { resolveTransportMode } from "./lib/transport-mode.js";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 
@@ -141,19 +142,24 @@ async function createMcpServer() {
 }
 
 async function run() {
-  // Transport mode detection following MCP 2025-06-18 patterns
+  // Transport mode detection with deterministic precedence
   const args = process.argv.slice(2);
-  const modeFromEnv = (process.env.TRANSPORT || process.env.MCP_MODE || process.env.MODE)?.toLowerCase();
-  const isHTTP = args.includes('--http') || modeFromEnv === 'http';
-  const isSSE = args.includes('--sse') || modeFromEnv === 'sse';
+  const { mode: resolvedMode, source } = resolveTransportMode(args, process.env);
 
-  const mode = isHTTP ? 'HTTP' : 'STDIO';
-  console.error(`[MCP Server] Mode: ${mode}`);
+  if (typeof process.env.MCP_MODE === "string" || typeof process.env.MODE === "string") {
+    console.error("[MCP Server] Deprecated env vars detected (MCP_MODE/MODE). They are ignored. Use TRANSPORT instead.");
+  }
+
+  const isSSE = resolvedMode === 'sse';
+  const isHTTP = resolvedMode === 'http' || isSSE;
+
+  const mode = isSSE ? 'SSE (deprecated)' : (isHTTP ? 'HTTP' : 'STDIO');
+  console.error(`[MCP Server] Mode: ${mode} (source: ${source})`);
 
   // Deprecation warning for SSE
   if (isSSE) {
     console.error('WARNING: SSE mode is deprecated in MCP 2025-06-18. Use StreamableHTTP instead.');
-    console.error('Use --http flag or MCP_MODE=http for HTTP mode.');
+    console.error('Use --http or TRANSPORT=http for HTTP mode.');
   }
 
   if (isHTTP) {

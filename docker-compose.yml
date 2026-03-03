@@ -10,7 +10,7 @@ services:
       # Server Configuration
       - NODE_ENV=production
       - PORT=${PORT:-3001}
-      - MCP_MODE=${MCP_MODE:-}
+      - TRANSPORT=${TRANSPORT:-stdio}
     ports:
       # Only needed for HTTP mode - uses PORT env var with fallback to 3001
       - "${PORT:-3001}:${PORT:-3001}"
@@ -19,7 +19,7 @@ services:
     tty: true
     restart: unless-stopped
 
-  # Example for HTTP mode using MCP_MODE
+  # Example for HTTP mode using TRANSPORT
   webex-mcp-server-http:
     build: .
     container_name: webex-mcp-server-http
@@ -29,7 +29,7 @@ services:
       - WEBEX_USER_EMAIL=${WEBEX_USER_EMAIL}
       - NODE_ENV=production
       - PORT=${PORT:-3001}
-      - MCP_MODE=http
+      - TRANSPORT=http
     ports:
       - "${PORT:-3001}:${PORT:-3001}"
     restart: unless-stopped

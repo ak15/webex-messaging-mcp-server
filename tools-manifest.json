@@ -118,13 +118,14 @@
       "WEBEX_API_BASE_URL",
       "WEBEX_USER_EMAIL",
       "PORT",
-      "MCP_MODE",
+      "TRANSPORT",
       "ENABLED_TOOLS"
     ]
   },
   "transport_modes": [
     "stdio",
-    "http"
+    "http",
+    "sse"
   ],
   "features": {
     "tool_filtering": true,

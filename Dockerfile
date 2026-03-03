@@ -24,8 +24,6 @@ COPY --chown=mcp:nodejs . .
 
 # Set environment variables
 ENV NODE_ENV=production
-# Set transport mode to HTTP for Smithery deployment
-ENV TRANSPORT=http
 
 # Expose port for HTTP mode (configurable via PORT env var)
 EXPOSE $PORT
@@ -37,5 +35,5 @@ USER mcp
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "console.log('Health check passed')" || exit 1
 
-# Start the server (transport mode controlled by TRANSPORT env var)
+# Start the server (transport mode controlled by env/CLI; default is STDIO)
 CMD ["node", "mcpServer.js"]
